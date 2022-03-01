@@ -1,8 +1,6 @@
 import os
-from rich import print
 from tqdm import tqdm
 from utils import time_this
-import pg
 
 
 def get_paths() -> list[tuple[int, str]]:
@@ -61,9 +59,3 @@ def pg_parse(data: list):
         # Note order swapping: (lat, lon) => (lon, lat)
         pg_data.append([user, lon, lat, alt, date, time])
     return pg_data
-
-
-if __name__ == "__main__":
-    data = read_data(5)
-    data = pg_parse(data)
-    pg.experiment(data, 30)

@@ -5,6 +5,7 @@ from psycopg2.extras import execute_batch
 from rich import print
 from tqdm import tqdm
 import math
+from parser import pg_parse, read_data
 
 from utils import time_this
 
@@ -45,23 +46,52 @@ class Connector:
             print("Connection to Postgres database closed")
 
 
-@time_this
-def experiment(data: list, transaction_size: int):
+def experiment():
     """
-    This handles data insertion for the Postgres version of the experiment.
+    This handles the Postgres version of the experiment.
+    """
+    data = read_data(5)
+    data = pg_parse(data)
+    reset_database()
+    insert_data("trackpoint_no_index", data, 30)
+    insert_data("trackpoint_indexed", data, 30)
+
+
+def reset_database():
+    """
+    Reset all tables used in the Postgres version of the experiment.
     """
     db = Connector()
+    with open("pg_schema.sql", "r") as file:
+        db.cursor.execute(file.read())
+    db.close()
+
+
+@time_this
+def insert_data(table: str, data: list, transaction_size: int):
+    """
+    Insert all supplied data into the specified table, in transactions with
+    up to N rows per transaction.
+    """
+    db = Connector(verbose=False)
     query = f"""
     --sql
-    INSERT INTO trackpoint (tp_user, tp_point, tp_altitude, tp_date, tp_time)
+    INSERT INTO {table} (tp_user, tp_point, tp_altitude, tp_date, tp_time)
     VALUES (%s, ST_MakePoint(%s,%s), %s, %s, %s)
     ;
     """
     records = len(data)
     transactions = math.ceil(records / transaction_size)
     print(f"Inserting {records} rows over {transactions} transactions")
+    print(f"Table: {table}")
     print(f"Batch size: {transaction_size} rows per transaction")
+    print()
 
     for i in tqdm(range(0, records, transaction_size)):
         execute_batch(db.cursor, query, data[i : i + transaction_size], 1000)
         db.connection.commit()
+    db.close()
+
+
+if __name__ == "__main__":
+    experiment()
