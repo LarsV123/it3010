@@ -9,3 +9,16 @@ IT3010 V22 - Group 2
 - Eirik Schøien
 - Christian Axell
 - Lukas Tveiten
+
+## Setup
+
+Prerequisites:
+
+- Python
+- Docker
+
+Steps:
+
+1. Make a copy of the `.env-template` file and rename it `.env`
+2. Run `docker-compose up`
+3. Connect to Adminer in a browser at `localhost:8080` (server="psql")
