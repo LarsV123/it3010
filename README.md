@@ -6,3 +6,5 @@ IT3010 V22 - Group 2
 
 - Lars-Olav Vågene
 - Ingvild Løver Thon
+- Eirik Schøien
+
