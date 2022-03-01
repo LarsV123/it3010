@@ -6,3 +6,4 @@ IT3010 V22 - Group 2
 
 - Lars-Olav Vågene
 - Eirik Schøien
+- Lukas Tveiten
