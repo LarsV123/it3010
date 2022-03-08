@@ -1,4 +1,4 @@
--- Schema for the PostgreSQL version of the experiment
+-- Schema for the MySQL version of the experiment
 -- As date/time is not used, we don't need to convert it to a better format.
 START TRANSACTION;
 DROP TABLE IF EXISTS trackpoint_no_index;
