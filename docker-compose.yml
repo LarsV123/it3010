@@ -10,15 +10,15 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
   mysql-db:
-    image: mysql:5.7
+    image: mysql
     restart: always
     environment:
-      MYSQL_DATABASE: 'mysql-db'
+      MYSQL_DATABASE: ${MYSQL_DB}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     ports:
-      - 3307:3307
+      - 3306:3306
     volumes:
       - mysqldata:/var/lib/mysql
   adminer:

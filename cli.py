@@ -1,4 +1,5 @@
 import pg
+import mysql
 import click
 from rich import print
 
@@ -18,6 +19,10 @@ def init(dbms: str):
     if dbms == "pg":
         db = pg.Connector()
         with open("pg_schema.sql", "r") as file:
+            db.cursor.execute(file.read())
+    elif dbms == "mysql":
+        db = mysql.Connector()
+        with open("mysql_schema.sql", "r") as file:
             db.cursor.execute(file.read())
     db.close()
 
