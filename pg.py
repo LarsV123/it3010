@@ -50,7 +50,7 @@ def experiment():
     """
     This handles the Postgres version of the experiment.
     """
-    data = read_data(5)
+    data = read_data(max_folders=5)
     data = pg_parse(data)
     reset_database()
     insert_data("trackpoint_no_index", data, 30)
