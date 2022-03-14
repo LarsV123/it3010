@@ -41,3 +41,15 @@ class Connector:
         self.connection.close()
         if self.verbose:
             print("Connection to MySQL database closed")
+
+
+def reset_database():
+    """
+    Reset all tables used in the MySQL version of the experiment.
+    """
+    db = Connector()
+    with open("mysql_schema.sql", "r") as file:
+        db.cursor.execute(file.read())
+    db.close()
+
+

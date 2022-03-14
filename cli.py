@@ -1,5 +1,6 @@
 import pg
 import mysql
+import mongo
 import click
 from rich import print
 
@@ -17,14 +18,12 @@ def init(dbms: str):
     """
     print(f"Initializing experiment table for: {dbms=}")
     if dbms == "pg":
-        db = pg.Connector()
-        with open("pg_schema.sql", "r") as file:
-            db.cursor.execute(file.read())
+        pg.reset_database()
     elif dbms == "mysql":
-        db = mysql.Connector()
-        with open("mysql_schema.sql", "r") as file:
-            db.cursor.execute(file.read())
-    db.close()
+        mysql.reset_database()
+    elif dbms == "mongo":
+        mongo.reset_database()
+        mongo.experiment(10000, 50, 3)
 
 
 if __name__ == "__main__":

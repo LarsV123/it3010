@@ -21,6 +21,18 @@ services:
       - 3306:3306
     volumes:
       - mysqldata:/var/lib/mysql
+  mongodb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB}
+      DB_USERNAME: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodata:/var/lib/mongodb/data
   adminer:
     image: adminer
     ports:
@@ -28,3 +40,4 @@ services:
 volumes:
   pgdata:
   mysqldata:
+  mongodata:
