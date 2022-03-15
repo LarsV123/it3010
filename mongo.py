@@ -25,7 +25,7 @@ class Connector:
         self.client = MongoClient(
             host=os.environ.get("HOST"),
             username=os.environ.get("DB_USER"),
-            password=os.environ.get("DB_PASSWORD")
+            password=os.environ.get("DB_PASSWORD"),
         )
 
         self.db = self.client.get_database(name=os.environ.get("MONGO_DB"))
@@ -54,9 +54,10 @@ def reset_database():
     db["trackpoint_indexed"].create_index([("tp_point", GEOSPHERE)])
     conn.close()
 
+
 def experiment(record_number, batch_size, run_count, thread_count=1):
     conn = Connector(verbose=False)
-    data = read_data(record_number=record_number)
+    data = read_data(max_records=record_number)
     data = mongo_parse(data)
     for run in range(run_count):
         print(f"Run number: {run}")
@@ -66,6 +67,7 @@ def experiment(record_number, batch_size, run_count, thread_count=1):
         insert_data(conn, "trackpoint_indexed", data, batch_size)
         print()
     conn.close()
+
 
 @time_this
 def insert_data(conn: Connector, collection_name, records: list, batch_size):

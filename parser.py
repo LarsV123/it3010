@@ -1,6 +1,5 @@
 import os
 from tqdm import tqdm
-from utils import time_this
 
 
 def get_paths() -> list[tuple[int, str]]:
@@ -19,8 +18,7 @@ def get_paths() -> list[tuple[int, str]]:
     return filepaths
 
 
-@time_this
-def read_data(record_number=None, max_folders=None):
+def read_data(max_records=None, max_folders=None) -> list:
     """
     Read up to MAX_FOLDERS .plt files from disk and parse them into a standard
     format.
@@ -33,14 +31,14 @@ def read_data(record_number=None, max_folders=None):
     progress = tqdm(total=len(folders))
     row_count = 0
     for username, path in folders:
-        if record_number and row_count >= record_number:
+        if max_records and row_count >= max_records:
             break
         progress.set_description(f"Processing {path}")
         file = open(path, "r")
         rows = file.readlines()[6:]  # Skip header
         rows = [x.strip().split(",") for x in rows]
         for row in rows:
-            if record_number and row_count >= record_number:
+            if max_records and row_count >= max_records:
                 break
             latitude = float(row[0])
             longitude = float(row[1])
@@ -54,7 +52,6 @@ def read_data(record_number=None, max_folders=None):
     return data
 
 
-@time_this
 def pg_parse(data: list):
     """
     Parse a list of preprocessed rows and convert them into a format suited to
@@ -67,7 +64,17 @@ def pg_parse(data: list):
     return pg_data
 
 
-@time_this
+def mysql_parse(data: list):
+    """
+    Parse a list of preprocessed rows and convert them into a format suited to
+    the MySQL version of the schema.
+    """
+    pg_data = []
+    for row in data:
+        pg_data.append(row.copy())
+    return data
+
+
 def mongo_parse(data: list):
     """
     Parse a list of preprocessed rows and convert them into a format suited to
@@ -76,12 +83,13 @@ def mongo_parse(data: list):
     mongo_data = []
     for user, lat, lon, alt, date, time in data:
         # Note order swapping: (lat, lon) => (lon, lat)
-        mongo_data.append({
-            "tp_user": user,
-            "tp_point": [lon, lat],
-            "tp_altitude": alt,
-            "tp_date": date,
-            "tp_time": time
-        })
+        mongo_data.append(
+            {
+                "tp_user": user,
+                "tp_point": [lon, lat],
+                "tp_altitude": alt,
+                "tp_date": date,
+                "tp_time": time,
+            }
+        )
     return mongo_data
-
