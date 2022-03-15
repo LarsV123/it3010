@@ -24,6 +24,7 @@ SELECT dbms,
   batch_size,
   ROUND(AVG(run_time), 2) AS avg_run_time,
   ROUND(AVG(ms_per_transaction), 2) AS avg_ms_per_transaction,
+  ROUND(AVG(rows_per_second), 2) AS avg_rows_per_second,
   COUNT(*) AS runs
 FROM result
 GROUP BY dbms,
