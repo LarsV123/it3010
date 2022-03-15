@@ -103,8 +103,7 @@ def generate_experiments(row_count: int):
     experiments: list[Setup] = []
 
     # Generate all permutations of the experimental setup
-    # for dbms in ["postgres", "mysql"]:
-    for dbms in ["mongodb"]:
+    for dbms in ["postgres", "mysql", "mongodb"]:
         for indexed in [True, False]:
             for batch_size in [2, 5, 10, 25, 50, 100, 200, 300, 500]:
                 if indexed:
