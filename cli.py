@@ -24,6 +24,8 @@ def init(dbms: str):
     elif dbms == "mongo":
         mongo.reset_database()
         mongo.experiment(10000, 50, 3)
+    else:
+        raise ValueError(f"Invalid DBMS specified: '{dbms}'")
 
 
 if __name__ == "__main__":
