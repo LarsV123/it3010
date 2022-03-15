@@ -3,11 +3,12 @@ import sqlite3
 import subprocess
 import pg
 import mysql_ex as my
+import mongo
 import random
 from rich import print
 from dataclasses import dataclass, field
 from time import perf_counter
-from parser import mysql_parse, pg_parse, read_data
+from parser import mongo_parse, mysql_parse, pg_parse, read_data
 from utils import time_this
 
 database = "experiments.db"
@@ -102,7 +103,8 @@ def generate_experiments(row_count: int):
     experiments: list[Setup] = []
 
     # Generate all permutations of the experimental setup
-    for dbms in ["postgres", "mysql"]:
+    # for dbms in ["postgres", "mysql"]:
+    for dbms in ["mongodb"]:
         for indexed in [True, False]:
             for batch_size in [2, 5, 10, 25, 50, 100, 200, 300, 500]:
                 if indexed:
@@ -133,6 +135,7 @@ def run_experiments(row_count: int):
     # Preprocess dataset for insertion
     pg_data = pg_parse(raw_data)
     mysql_data = mysql_parse(raw_data)
+    mongo_data = mongo_parse(raw_data)
 
     experiments = generate_experiments(row_count)
 
@@ -164,8 +167,17 @@ def run_experiments(row_count: int):
             # EXPERIMENT FINISHED
 
             db.connection.close()
+        elif x.dbms == "mongodb":
+            db = mongo.Connector(verbose=False)
+            mongo.reset_database()
+
+            ## EXPERIMENT START
+            start = perf_counter()
+            mongo.insert_data(db, x.table_name, mongo_data, x.batch_size, row_count)
+            end = perf_counter()
+            # EXPERIMENT FINISHED
         else:
-            raise NotImplemented(f"Not implemented yet: {x.dbms}")
+            raise NotImplemented(f"Not implemented: {x.dbms}")
 
         # Clean-up phase
         elapsed = round(end - start, 2)

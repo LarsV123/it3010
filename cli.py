@@ -44,7 +44,6 @@ def init(dbms: str):
         mysql_ex.reset_database()
     elif dbms == "mongo":
         mongo.reset_database()
-        mongo.experiment(10000, 50, 3)
     else:
         raise ValueError(f"Invalid DBMS specified: '{dbms}'")
 

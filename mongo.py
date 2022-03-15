@@ -21,7 +21,7 @@ class Connector:
         # Toggle whether or not debug print statements are used
         self.verbose = verbose
 
-        # Connect to the Mono server
+        # Connect to the Mongo server
         self.client = MongoClient(
             host=os.environ.get("HOST"),
             username=os.environ.get("DB_USER"),
@@ -55,26 +55,12 @@ def reset_database():
     conn.close()
 
 
-def experiment(record_number, batch_size, run_count, thread_count=1):
-    conn = Connector(verbose=False)
-    data = read_data(max_records=record_number)
-    data = mongo_parse(data)
-    for run in range(run_count):
-        print(f"Run number: {run}")
-        print("---------------------------------------")
-        reset_database()
-        insert_data(conn, "trackpoint_no_index", data, batch_size)
-        insert_data(conn, "trackpoint_indexed", data, batch_size)
-        print()
-    conn.close()
-
-
-@time_this
-def insert_data(conn: Connector, collection_name, records: list, batch_size):
-    records_number = len(records)
-    batches = math.ceil(records_number / batch_size)
-    print(f"Inserting {records_number} documents over {batches} batches")
-    print(f"Collection: {collection_name}")
-    print(f"Batch size: {batch_size} documents per batch")
-    for i in tqdm(range(0, records_number, batch_size)):
+def insert_data(
+    conn: Connector,
+    collection_name: str,
+    records: list,
+    batch_size: int,
+    row_count: int,
+):
+    for i in tqdm(range(0, row_count, batch_size)):
         conn.db[collection_name].insert_many(records[i : i + batch_size])
