@@ -51,11 +51,21 @@ def init(dbms: str):
 @cli.command()
 @click.option("-i", default=1, help="Number of runs of each experimental setup")
 @click.option(
-    "-n", default=1000, help="Number of records to insert for each experimental run"
+    "-n", default=100000, help="Number of records to insert for each experimental run"
 )
-def run(i: int, n: int):
-    for _ in range(i):
-        experiment.run_experiments(n)
+@click.option(
+    "-p",
+    default=1000000,
+    help="Number of records to preload before each experimental run",
+)
+def run(i: int, n: int, p: int):
+    for j in range(i):
+        experiment.run_experiments(
+            experiment_size=n,
+            preload_size=p,
+            max_iterations=i,
+            current_iteration=j,
+        )
 
 
 if __name__ == "__main__":

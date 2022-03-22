@@ -62,18 +62,21 @@ class Setup:
     """
 
     dbms: str
-    table_name: str
+    table_name: str = field(repr=False)
     indexed: bool
     batch_size: int
-    rows_inserted: int
-    run_time: float = field(default=0, kw_only=True)
-    git_hash: str = field(default=last_commit, kw_only=True)
+    experiment_size: int
+    preload_size: int
+    run_time: float = field(default=0, kw_only=True, repr=False)
+    git_hash: str = field(default=last_commit, kw_only=True, repr=False)
 
     def validate(self):
         if self.run_time == 0:
             raise ValueError("Missing value: run_time")
-        if self.rows_inserted == 0:
-            raise ValueError("Missing value: rows_inserted")
+        if self.experiment_size == 0:
+            raise ValueError("Missing value: experiment_size")
+        if self.preload_size == 0:
+            raise ValueError("Missing value: preload_size")
         if self.batch_size < 1:
             raise ValueError(f"Invalid value: {self.batch_size=}")
 
@@ -84,11 +87,24 @@ class Setup:
 
         query = f"""
         --sql
-        INSERT INTO result
-        (dbms, indexed, batch_size, rows_inserted, run_time, git_hash) 
-        VALUES
-        (:dbms, :indexed, :batch_size, :rows_inserted, :run_time, :git_hash)
-        ;
+        INSERT INTO result (
+            dbms,
+            indexed,
+            batch_size,
+            experiment_size,
+            preload_size,
+            run_time,
+            git_hash
+        )
+        VALUES (
+            :dbms,
+            :indexed,
+            :batch_size,
+            :experiment_size,
+            :preload_size,
+            :run_time,
+            :git_hash
+        );
         """
 
         values = dataclasses.asdict(self)
@@ -96,7 +112,7 @@ class Setup:
         connection.commit()
 
 
-def generate_experiments(row_count: int):
+def generate_experiments(experiment_size: int, preload_size: int):
     """
     Generate all permutations of the experimental setup.
     """
@@ -105,7 +121,7 @@ def generate_experiments(row_count: int):
     # Generate all permutations of the experimental setup
     for dbms in ["postgres", "mysql", "mongodb"]:
         for indexed in [True, False]:
-            for batch_size in [2, 5, 10, 25, 50, 100, 200, 300, 500]:
+            for batch_size in [2, 5, 10, 25, 50, 100, 200, 300, 500, 1000, 1500, 2000]:
                 if indexed:
                     table = "trackpoint_indexed"
                 else:
@@ -115,7 +131,8 @@ def generate_experiments(row_count: int):
                     dbms=dbms,
                     table_name=table,
                     indexed=indexed,
-                    rows_inserted=row_count,
+                    experiment_size=experiment_size,
+                    preload_size=preload_size,
                     batch_size=batch_size,
                 )
                 experiments.append(setup)
@@ -123,57 +140,90 @@ def generate_experiments(row_count: int):
 
 
 @time_this
-def run_experiments(row_count: int):
+def run_experiments(
+    experiment_size: int,
+    preload_size: int,
+    max_iterations: int,
+    current_iteration: int,
+):
     """
     Run all possible permutations of the experimental setup.
+    Each experiment is run with a clean slate, with the database completely
+    reset. We then preload the database with a number of records to simulate
+    real usage.
+
+    Parameters:
+    - experiment_size -- number of rows to insert during experiment
+    - preload_size -- number of rows to insert before start of experiment
     """
-    raw_data = read_data(max_records=row_count)
-    if len(raw_data) != row_count:
-        raise ValueError(f"{len(raw_data)=} | {row_count=}")
+    total_rows = experiment_size + preload_size
+    raw_data = read_data(max_records=total_rows)
+    if len(raw_data) != total_rows:
+        raise ValueError(f"{len(raw_data)=} | {total_rows=}")
+    preload_data = raw_data[:preload_size]
+    experiment_data = raw_data[preload_size:]
 
     # Preprocess dataset for insertion
-    pg_data = pg_parse(raw_data)
-    mysql_data = mysql_parse(raw_data)
-    mongo_data = mongo_parse(raw_data)
+    pg_data = pg_parse(experiment_data)
+    pg_preload = pg_parse(preload_data)
+    mysql_data = mysql_parse(experiment_data)
+    mysql_preload = mysql_parse(preload_data)
+    mongo_data = mongo_parse(experiment_data)
+    mongo_preload = mongo_parse(preload_data)
 
-    experiments = generate_experiments(row_count)
+    experiments = generate_experiments(experiment_size, preload_size)
 
     # Randomize order of experiments
     random.shuffle(experiments)
+    experiment_count = len(experiments)
 
-    for x in experiments:
+    for index, x in enumerate(experiments):
+        print()
+        print(f"Iteration {current_iteration + 1}/{max_iterations}")
+        print(f"Experiment {index + 1}/{experiment_count}")
+        print(x)
+
         # Prepare DBMS-specific setup
         if x.dbms == "postgres":
             db = pg.Connector(verbose=False)
             db.reset_database()
+            pg.insert(db, x.table_name, pg_preload, 25000, preload_size)
+            db.close()
 
             ## EXPERIMENT START
+            db = pg.Connector(verbose=False)
             start = perf_counter()
-            pg.insert_data(db, x.table_name, pg_data, x.batch_size, row_count)
+            pg.insert(db, x.table_name, pg_data, x.batch_size, experiment_size)
             end = perf_counter()
+            db.close()
             # EXPERIMENT FINISHED
-
-            db.connection.close()
 
         elif x.dbms == "mysql":
             db = my.Connector(verbose=False)
             db.reset_database()
+            my.insert(db, x.table_name, mysql_data, 25000, preload_size)
+            db.close()
 
             ## EXPERIMENT START
+            db = my.Connector(verbose=False)
             start = perf_counter()
-            my.insert_data(db, x.table_name, mysql_data, x.batch_size, row_count)
+            my.insert(db, x.table_name, mysql_preload, x.batch_size, experiment_size)
             end = perf_counter()
+            db.close()
             # EXPERIMENT FINISHED
 
-            db.connection.close()
         elif x.dbms == "mongodb":
             db = mongo.Connector(verbose=False)
             mongo.reset_database()
+            mongo.insert(db, x.table_name, mongo_preload, 25000, preload_size)
+            db.close()
 
             ## EXPERIMENT START
+            db = mongo.Connector(verbose=False)
             start = perf_counter()
-            mongo.insert_data(db, x.table_name, mongo_data, x.batch_size, row_count)
+            mongo.insert(db, x.table_name, mongo_data, x.batch_size, experiment_size)
             end = perf_counter()
+            db.close()
             # EXPERIMENT FINISHED
         else:
             raise NotImplemented(f"Not implemented: {x.dbms}")
@@ -181,5 +231,5 @@ def run_experiments(row_count: int):
         # Clean-up phase
         elapsed = round(end - start, 2)
         x.run_time = elapsed
-        x.rows_inserted = row_count
+        x.rows_inserted = experiment_size
         x.save()

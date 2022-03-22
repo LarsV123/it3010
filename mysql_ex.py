@@ -71,7 +71,7 @@ class Connector:
         self.execute_script("mysql_schema.sql")
 
 
-def insert_data(db: Connector, table: str, data: list, batch_size: int, row_count: int):
+def insert(db: Connector, table: str, data: list, batch_size: int, row_count: int):
     """
     Insert all supplied data into the specified table, in transactions of the
     given size.

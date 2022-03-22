@@ -5,13 +5,14 @@ CREATE TABLE result (
   dbms TEXT NOT NULL,
   indexed BOOLEAN NOT NULL,
   batch_size INTEGER NOT NULL,
-  rows_inserted INTEGER NOT NULL,
+  experiment_size INTEGER NOT NULL,
+  preload_size INTEGER NOT NULL,
   run_time FLOAT NOT NULL,
   git_hash TEXT NOT NULL,
-  rows_per_second FLOAT GENERATED ALWAYS AS (ROUND(rows_inserted / run_time, 2)) STORED,
+  rows_per_second FLOAT GENERATED ALWAYS AS (ROUND(experiment_size / run_time, 2)) STORED,
   ms_per_transaction FLOAT GENERATED ALWAYS AS (
     ROUND(
-      (run_time * 1000) / (rows_inserted / batch_size),
+      (run_time * 1000) / (experiment_size / batch_size),
       2
     )
   ) STORED,
