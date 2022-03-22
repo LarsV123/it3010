@@ -75,8 +75,8 @@ class Setup:
             raise ValueError("Missing value: run_time")
         if self.experiment_size == 0:
             raise ValueError("Missing value: experiment_size")
-        if self.preload_size == 0:
-            raise ValueError("Missing value: preload_size")
+        if self.preload_size < 0:
+            raise ValueError(f"Invalid value: {self.preload_size=}")
         if self.batch_size < 1:
             raise ValueError(f"Invalid value: {self.batch_size=}")
 
