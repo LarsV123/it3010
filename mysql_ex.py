@@ -81,6 +81,6 @@ def insert(db: Connector, table: str, data: list, batch_size: int, row_count: in
     VALUES (%s, ST_GeomFromText('POINT(%s %s)'), %s, %s, %s)
     ;
     """
-    for i in tqdm(range(0, row_count, batch_size)):
+    for i in tqdm(range(0, row_count, batch_size), leave=False):
         db.cursor.executemany(query, data[i : i + batch_size])
         db.connection.commit()

@@ -59,5 +59,5 @@ def insert(
     batch_size: int,
     row_count: int,
 ):
-    for i in tqdm(range(0, row_count, batch_size)):
+    for i in tqdm(range(0, row_count, batch_size), leave=False):
         conn.db[collection_name].insert_many(records[i : i + batch_size])

@@ -28,7 +28,7 @@ def read_data(max_records=None, max_folders=None) -> list:
         folders = folders[:max_folders]
 
     data = []
-    progress = tqdm(total=len(folders))
+    progress = tqdm(total=len(folders), leave=False)
     row_count = 0
     for username, path in folders:
         if max_records and row_count >= max_records:

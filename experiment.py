@@ -230,6 +230,7 @@ def run_experiments(
 
         # Clean-up phase
         elapsed = round(end - start, 2)
+        print(f"Run time: {elapsed} seconds")
         x.run_time = elapsed
         x.rows_inserted = experiment_size
         x.save()
