@@ -5,7 +5,7 @@ services:
       resources:
         limits:
           cpus: ".25"
-          memory: 2048M
+          memory: 4096M
     restart: always
     ports:
       - 5432:5432
@@ -21,7 +21,7 @@ services:
       resources:
         limits:
           cpus: ".25"
-          memory: 2048M
+          memory: 4096M
     restart: always
     environment:
       MYSQL_DATABASE: ${MYSQL_DB}
@@ -38,7 +38,7 @@ services:
       resources:
         limits:
           cpus: ".25"
-          memory: 2048M
+          memory: 4096M
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
