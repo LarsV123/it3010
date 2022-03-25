@@ -1,12 +1,9 @@
 import os
-import math
 from dotenv import load_dotenv, find_dotenv
 from rich import print
 from pymongo import MongoClient, GEOSPHERE
 from tqdm import tqdm
 
-from parser import mongo_parse, read_data
-from utils import time_this
 
 load_dotenv(find_dotenv())
 
@@ -55,12 +52,12 @@ def reset_database():
     conn.close()
 
 
-def insert_data(
+def insert(
     conn: Connector,
     collection_name: str,
     records: list,
     batch_size: int,
     row_count: int,
 ):
-    for i in tqdm(range(0, row_count, batch_size)):
+    for i in tqdm(range(0, row_count, batch_size), leave=False):
         conn.db[collection_name].insert_many(records[i : i + batch_size])

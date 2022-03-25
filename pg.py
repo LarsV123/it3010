@@ -49,7 +49,7 @@ class Connector:
             self.cursor.execute(file.read())
 
 
-def insert_data(db: Connector, table: str, data: list, batch_size: int, row_count: int):
+def insert(db: Connector, table: str, data: list, batch_size: int, row_count: int):
     """
     Insert all supplied data into the specified table, in transactions of the
     given size.
@@ -61,6 +61,6 @@ def insert_data(db: Connector, table: str, data: list, batch_size: int, row_coun
     ;
     """
 
-    for i in tqdm(range(0, row_count, batch_size)):
+    for i in tqdm(range(0, row_count, batch_size), leave=False):
         execute_batch(db.cursor, query, data[i : i + batch_size])
         db.connection.commit()

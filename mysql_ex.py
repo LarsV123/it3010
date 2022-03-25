@@ -71,7 +71,7 @@ class Connector:
         self.execute_script("mysql_schema.sql")
 
 
-def insert_data(db: Connector, table: str, data: list, batch_size: int, row_count: int):
+def insert(db: Connector, table: str, data: list, batch_size: int, row_count: int):
     """
     Insert all supplied data into the specified table, in transactions of the
     given size.
@@ -81,6 +81,6 @@ def insert_data(db: Connector, table: str, data: list, batch_size: int, row_coun
     VALUES (%s, ST_GeomFromText('POINT(%s %s)'), %s, %s, %s)
     ;
     """
-    for i in tqdm(range(0, row_count, batch_size)):
+    for i in tqdm(range(0, row_count, batch_size), leave=False):
         db.cursor.executemany(query, data[i : i + batch_size])
         db.connection.commit()
