@@ -16,7 +16,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
   mysql-db:
-    image: mysql
+    image: mysql:8.0.28-debian
     deploy:
       resources:
         limits:
@@ -33,7 +33,7 @@ services:
     volumes:
       - mysqldata:/var/lib/mysql
   mongodb:
-    image: mongo:latest
+    image: mongo:5.0.6-focal
     deploy:
       resources:
         limits:
