@@ -1,6 +1,8 @@
 venv
 .env
 data
+figures
 __pycache__
 *.db
 results
+.idea/
