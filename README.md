@@ -1,6 +1,9 @@
-# IT3010
+# Insertion speed of indexed spatial data
 
-IT3010 V22 - Group 2
+This Github repository holds the code used by group 2 in the course IT3010 in 2022.
+This was used to generate data for our paper, the full title of which is:
+
+> Insertion speed of indexed spatial data: comparing MySQL, PostgreSQL and MongoDB
 
 ## Contributors
 
