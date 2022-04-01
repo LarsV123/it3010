@@ -6,7 +6,7 @@ index = 0
 
 #Which graph
 y_var = "rows_per_second"
-#y_var = "ms_per_transaction"
+y_var = "ms_per_transaction"
 
 #Read csv and filter the non indexed
 data = pd.read_csv("results.csv")
@@ -28,11 +28,17 @@ for dbMean, dbStd in zip(mean.groupby("dbms"), std.groupby("dbms")):
     plt.errorbar(x, y, yerr=y_err, label=dbMean[0], fmt='o-')
 
 
+#Font and size
+font = {'size'   : 12}
+plt.rc('font', **font)
+
 #Styling of the plot
+plt.ticklabel_format(style = 'sci', axis="y", scilimits=(1,5), useOffset=False)
+
 plt.grid()
 plt.ylabel(y_var, fontsize=12)
 plt.xlabel("Batch Size", fontsize=12)
-plt.title(f"Average {y_var} for batch sizes 2 to 2000", fontsize=14)
+plt.title(f"Average {y_var} for batch sizes 2 to 2000", fontsize=12)
 plt.legend(loc="best", title="Database")
 plt.savefig(f'Figures/{y_var}.pdf')  
 plt.show()
